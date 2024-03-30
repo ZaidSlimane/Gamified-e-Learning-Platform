@@ -32,8 +32,35 @@ class Course(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
 
-class Chapter (models.Model):
+class Chapter(models.Model):
     chapterName = models.CharField(max_length=100)
     content = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+
+class Enrollments(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+
+class Review(models.Model):
+    review_content = models.TextField()
+    stars = models.IntegerField()
+    enrollment = models.ForeignKey(Enrollments, on_delete=models.CASCADE)
+
+
+class Question(models.Model):
+    question_content = models.TextField()
+    question_answer = models.TextField()
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE)
+
+
+class Games(models.Model):
+    game_name = models.CharField(max_length=100)
+    game_points = models.IntegerField()
+
+
+class Chat_participant(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
