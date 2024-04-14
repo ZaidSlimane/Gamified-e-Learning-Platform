@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'rest_framework_simplejwt.token_blacklist'
+    'rest_framework_simplejwt.token_blacklist',
+    'ElearningPlatform'
 ]
 
 MIDDLEWARE = [
@@ -97,10 +98,17 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 
-WSGI_APPLICATION = 'Authentication.wsgi.application'
+WSGI_APPLICATION = 'backend.wsgi.application'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mailersend.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'MS_nm6xur@trial-351ndgwqm5qgzqx8.mlsender.net'  # Your MailerSend username
+EMAIL_HOST_PASSWORD = 'kx4p2pWgXNQHEwZ9'  # Your MailerSend password or API key
 
 
-# Database
+
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {

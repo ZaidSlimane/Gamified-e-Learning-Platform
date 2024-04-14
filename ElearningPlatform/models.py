@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+
 # Create your models here.
 
 class Student(models.Model):
@@ -9,9 +10,11 @@ class Student(models.Model):
         User,
         on_delete=models.CASCADE,
         primary_key=True,
-    ),
-    grade = models.fields.CharField(max_length=20),
-    points = models.fields.IntegerField()
+        unique=True,
+    )
+    phone_number = models.CharField(max_length=20)
+    grade = models.fields.CharField(max_length=20)
+    points = models.fields.IntegerField(default=0)
 
 
 class Teacher(models.Model):
@@ -64,3 +67,13 @@ class Games(models.Model):
 class Chat_participant(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+
+
+class Chatroom(models.Model):
+    room_name = models.CharField(max_length=100)
+
+
+class Message(models.Model):
+    content = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+    room = models.ForeignKey(Chatroom, on_delete=models.CASCADE)
