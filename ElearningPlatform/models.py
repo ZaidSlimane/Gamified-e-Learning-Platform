@@ -22,10 +22,10 @@ class Teacher(models.Model):
         User,
         on_delete=models.CASCADE,
         primary_key=True,
-    ),
-    grade = models.fields.CharField(max_length=50),
-    institute = models.fields.CharField(max_length=100)
-
+        unique=True,
+    )
+    grade = models.CharField(max_length=50)
+    institute = models.CharField(max_length=100)
 
 class Course(models.Model):
     courseName = models.CharField(max_length=100)
