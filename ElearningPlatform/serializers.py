@@ -1,3 +1,4 @@
+import password
 from rest_framework import serializers
 from .models import Student, Teacher, Course, Chapter, Enrollments, Review, Question, Games, Chat_participant, Chatroom, \
     Message
@@ -9,20 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
-
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-
     class Meta:
         model = Student
         fields = '__all__'
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_instance, _ = User.objects.get_or_create(**user_data)
-        student_instance = Student.objects.create(user=user_instance, **validated_data)
-        return student_instance
-
 
 class TeacherSerializer(serializers.ModelSerializer):
     user = UserSerializer()

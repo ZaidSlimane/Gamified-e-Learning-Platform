@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-
 # Create your models here.
 
 class Student(models.Model):
@@ -16,6 +15,9 @@ class Student(models.Model):
     grade = models.fields.CharField(max_length=20)
     points = models.fields.IntegerField(default=0)
 
+    def __str__(self):
+        return self.user.username
+
 
 class Teacher(models.Model):
     user = models.OneToOneField(
@@ -26,6 +28,7 @@ class Teacher(models.Model):
     )
     grade = models.CharField(max_length=50)
     institute = models.CharField(max_length=100)
+
 
 class Course(models.Model):
     courseName = models.CharField(max_length=100)

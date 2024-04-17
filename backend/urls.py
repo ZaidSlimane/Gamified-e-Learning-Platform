@@ -21,5 +21,5 @@ from ElearningPlatform import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup/', views.signUp, name='signup')
+    path('signup/', views.signUp.as_view(), name='signup')
 ]
