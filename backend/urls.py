@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import path
 
 from ElearningPlatform import views
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup/', views.signUp.as_view(), name='signup')
+    path('signup/', views.signUp.as_view(), name='signup'),
+    path('auth/', include('ElearningPlatform.urls'))
 ]

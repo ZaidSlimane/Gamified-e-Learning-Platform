@@ -1,4 +1,3 @@
-import password
 from rest_framework import serializers
 from .models import Student, Teacher, Course, Chapter, Enrollments, Review, Question, Games, Chat_participant, Chatroom, \
     Message
