@@ -101,11 +101,11 @@ CORS_ALLOW_CREDENTIALS = True
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mailersend.net'
-EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'MS_nm6xur@trial-351ndgwqm5qgzqx8.mlsender.net'  # Your MailerSend username
-EMAIL_HOST_PASSWORD = 'kx4p2pWgXNQHEwZ9'  # Your MailerSend password or API key
+MAILERSEND_SMTP_PORT = 587
+MAILERSEND_SMTP_USERNAME = 'MS_Qk56Qv@trial-pq3enl6yr85g2vwr.mlsender.net'
+MAILERSEND_SMTP_PASSWORD = '5GBt69272gPFJM84'
+MAILERSEND_SMTP_HOST = 'smtp.mailersend.net'
 
 
 
