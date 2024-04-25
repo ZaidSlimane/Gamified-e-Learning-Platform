@@ -1,26 +1,20 @@
-import hashlib
-import logging
-import os
-from datetime import datetime
-
-from django.utils import timezone
-from email.message import EmailMessage
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.core.mail import get_connection
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render
 import mailersend, json
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.mail import EmailMessage
-from django.http import JsonResponse
-from django.conf import settings
-import random
-from backend import settings
+from rest_framework import generics
+from .serializers import *
+from .models import *
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, DestroyAPIView
+
+
+
 
 from django.shortcuts import render
 
@@ -37,10 +31,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Student
 from .serializers import UserSerializer, StudentSerializer
 
-logger = logging.getLogger(__name__)
 
-
-def check_email_exists(email):
+def check_email_exists(self, email):
+    User = get_user_model()
     return User.objects.filter(email=email).exists()
 
 
@@ -53,27 +46,19 @@ class signUp(APIView):
                 email = serializer.validated_data.get('user', {}).get('email')
                 print(email)
 
-                if check_email_exists(email):
-                    raise ValidationError("The Student is already registered")
-                else:
-                    user_data = serializer.validated_data.pop('user', {})
-                    print(user_data)
+                user_data = serializer.validated_data.pop('user', {})
+                print(user_data)
 
-                    # Request a code to verify the student email
-
-                    request_code(request, email)
-                    redirect('verify')
-
-                    user = User.objects.create_user(
-                        username=user_data.get('username'),
-                        email=email,
-                        password=user_data.get('password'),
-                        first_name=user_data.get('first_name'),
-                        last_name=user_data.get('last_name'),
-                        is_superuser=False,  # Assuming default value is False
-                        is_staff=False,  # Assuming default value is False
-                        is_active=True  # Assuming default value is False
-                    )
+                user = User.objects.create_user(
+                    username=user_data.get('username'),
+                    email=email,
+                    password=user_data.get('password'),
+                    first_name=user_data.get('first_name'),
+                    last_name=user_data.get('last_name'),
+                    is_superuser=False,  # Assuming default value is False
+                    is_staff=False,  # Assuming default value is False
+                    is_active=False  # Assuming default value is False
+                )
                 print(user)
                 student_instance = Student(user=user,
                                            phone_number=serializer.validated_data.get('phone_number'),
@@ -87,65 +72,6 @@ class signUp(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-def request_code(request, email):
-    try:
-        code = get_random_code()
-        hashed_code = hashlib.sha256(str(code).encode()).hexdigest()
-        request.session['verification_code'] = hashed_code
-        send_verification_email(code, email)
-        request.session['verification_start_time'] = datetime.now()
-        return HttpResponse("Code sent! Please check your email.")
-    except Exception as e:
-        logger.error("Error sending verification email: %s", e)
-        return HttpResponse("Failed to send verification code. Please try again later.")
-
-
-def send_verification_email(code, email):
-    try:
-        subject = "Verification Code"
-        message = f"Your verification code is: {code}"
-        from_email = "MS_Qk56Qv@trial-pq3enl6yr85g2vwr.mlsender.net"
-        recipient_list = [email]
-
-        connection = get_connection(
-            host=settings.MAILERSEND_SMTP_HOST,
-            port=settings.MAILERSEND_SMTP_PORT,
-            username=settings.MAILERSEND_SMTP_USERNAME,
-            password=settings.MAILERSEND_SMTP_PASSWORD,
-            use_tls=True,
-        )
-
-        email = EmailMessage(subject, message, from_email, recipient_list, connection=connection)
-        email.content_subtype = "html"
-        email.send()
-    except Exception as e:
-        logger.error("Error sending email: %s", e)
-        raise
-
-
-def get_random_code():
-    return random.randint(1000, 9999)
-
-
-class verify(APIView):
-    def post(self, request):
-        user_code = request.POST.get('code', '')
-        verification_code = request.session.get('verification_code')
-        verification_start_time = request.session.get('verification_start_time')
-        total_waiting_time = (timezone.now() - verification_start_time).total_seconds()
-
-        if not verification_code or not verification_start_time or total_waiting_time >= 5 * 60:
-            return HttpResponse("The verification session has expired. Please request a new code.")
-
-        if user_code == verification_code:
-            del request.session['verification_code']
-            del request.session['verification_start_time']
-            return redirect('signUp')
-            return HttpResponse("Code verified successfully!")
-        else:
-            return HttpResponse("Invalid code. Please retry.")
 
 
 @api_view(['GET'])
@@ -173,3 +99,198 @@ class LogoutView(APIView):
             return Response({"message": "Logout successful."})
         except Exception as e:
             return Response({"error": "Invalid token or logout failed."}, status=400)
+
+
+# Course views
+
+
+class CourseListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+
+class CourseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+
+class ChapterListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Chapter.objects.all()
+    serializer_class = ChapterSerializer
+
+
+class ChapterRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Chapter.objects.all()
+    serializer_class = ChapterSerializer
+
+class CourseChapterListAPIView(ListCreateAPIView):
+    serializer_class = ChapterSerializer
+
+    def get_queryset(self):
+        # Retrieve the course_id from the URL parameter
+        course_id = self.kwargs['course_id']
+        # Filter chapters based on the course_id
+        return Chapter.objects.filter(course_id=course_id)
+
+class CourseChapterDetailAPIView(RetrieveAPIView):
+        queryset = Chapter.objects.all()
+        serializer_class = ChapterSerializer
+
+class CourseChapterDeleteAPIView(DestroyAPIView):
+    queryset = Chapter.objects.all()
+    serializer_class = ChapterSerializer
+
+
+@api_view(['DELETE'])
+def chapterdelete(request, pk):
+    try:
+        chapter = Chapter.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    chapter.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class ChatroomListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Chatroom.objects.all()
+    serializer_class = ChatroomSerializer
+
+class ChatroomRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Chatroom.objects.all()
+    serializer_class = ChatroomSerializer
+
+
+
+class EnrollmentListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Enrollments.objects.all()
+    serializer_class = EnrollmentsSerializer
+
+class EnrollmentDetailAPIView(generics.RetrieveDestroyAPIView):
+    queryset = Enrollments.objects.all()
+    serializer_class = EnrollmentsSerializer
+
+
+
+
+class EnrollmentByCourseAPIView(generics.ListAPIView):
+    serializer_class = EnrollmentsSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Enrollments.objects.filter(course_id=course_id)
+
+class EnrollmentByStudentAPIView(generics.ListAPIView):
+    serializer_class = EnrollmentsSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        return Enrollments.objects.filter(student_id=student_id)
+
+
+class ReviewListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+class ReviewDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+
+
+class ReviewByCourseAPIView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Review.objects.filter(enrollment__course_id=course_id)
+
+class ReviewByStudentAPIView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        return Review.objects.filter(enrollment__student_id=student_id)
+
+
+
+
+class QuestionListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+
+class QuestionByChapterAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        chapter_id = self.kwargs['chapter_id']
+        return Question.objects.filter(chapter_id=chapter_id)
+
+class QuestionByCourseAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Question.objects.filter(chapter__course_id=course_id)
+
+class QuestionByStudentAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        return Question.objects.filter(student_id=student_id)
+
+
+
+class ChatParticipantListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Chat_participant.objects.all()
+    serializer_class = ChatParticipantSerializer
+
+class ChatParticipantRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Chat_participant.objects.all()
+    serializer_class = ChatParticipantSerializer
+
+class ChatroomListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Chatroom.objects.all()
+    serializer_class = ChatroomSerializer
+
+class ChatroomRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Chatroom.objects.all()
+    serializer_class = ChatroomSerializer
+
+class MessageListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
+class MessageRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
+
+
+class ChatParticipantByUserIDAPIView(generics.ListAPIView):
+    serializer_class = ChatParticipantSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Chat_participant.objects.filter(student_id=user_id) | Chat_participant.objects.filter(teacher_id=user_id)
+
+class ChatroomByChatParticipantAPIView(generics.ListAPIView):
+    serializer_class = ChatroomSerializer
+
+    def get_queryset(self):
+        participant_id = self.kwargs['participant_id']
+        return Chatroom.objects.filter(participants__id=participant_id)
+
+class MessageByChatroomAPIView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        chatroom_id = self.kwargs['chatroom_id']
+        return Message.objects.filter(room_id=chatroom_id)
