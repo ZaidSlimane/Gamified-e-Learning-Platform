@@ -14,6 +14,7 @@ class Student(models.Model):
     phone_number = models.CharField(max_length=20)
     grade = models.fields.CharField(max_length=20)
     points = models.fields.IntegerField(default=0)
+    otp = models.fields.CharField(blank=True, default=None, max_length=6, null=True)
 
     def __str__(self):
         return self.user.username
