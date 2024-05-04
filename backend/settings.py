@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure--c-_9!eizw%o_6lg27_4os)51c+96=!593(8ysde6u%ith0i9$
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -44,6 +42,11 @@ INSTALLED_APPS = [
     'ElearningPlatform'
 ]
 
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 300
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,18 +58,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 REST_FRAMEWORK = {
-     'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-      ],
+    ],
 }
 
 SIMPLE_JWT = {
-     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
-     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-     'ROTATE_REFRESH_TOKENS': True,
-     'BLACKLIST_AFTER_ROTATION': True
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True
 }
 
 ROOT_URLCONF = 'backend.urls'
@@ -94,20 +96,17 @@ CORS_ALLOWED_ORIGINS = [
     # Add other allowed origins as needed
 ]
 
-
 CORS_ALLOW_CREDENTIALS = True
-
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mailersend.net'  # Host for MailerSend SMTP
 EMAIL_USE_TLS = True
-MAILERSEND_SMTP_PORT = 587
-MAILERSEND_SMTP_USERNAME = 'MS_Qk56Qv@trial-pq3enl6yr85g2vwr.mlsender.net'
-MAILERSEND_SMTP_PASSWORD = '5GBt69272gPFJM84'
-MAILERSEND_SMTP_HOST = 'smtp.mailersend.net'
-
-
+EMAIL_PORT = 587  # Port for MailerSend SMTP
+EMAIL_HOST_USER = 'MS_psdNE6@trial-z3m5jgrq60oldpyo.mlsender.net'  # Your MailerSend SMTP user
+EMAIL_HOST_PASSWORD = 'C3vN8qGurXSuQL5M'  # Your MailerSend SMTP password
+DEFAULT_FROM_EMAIL = 'MS_psdNE6@trial-z3m5jgrq60oldpyo.mlsender.net'
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -116,12 +115,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'elearninPlatform',
         'USER': 'root',
-        'PASSWORD': 'slim2003', #change if needed
+        'PASSWORD': 'slim2003',  # change if needed
         'HOST': '127.0.0.1',
         'PORT': '3306',  # Optional, default port for MySQL is 3306
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -141,7 +139,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -152,7 +149,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

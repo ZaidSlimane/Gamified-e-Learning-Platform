@@ -9,9 +9,10 @@ from .views import *
 
 urlpatterns = [
     path('hello-world/', views.hello_world, name='hello_world'),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('login/', views.Login.as_view(), name='login'),
+    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', TokenView.as_view(), name='token'),
+    path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('home/', views.home.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('courses/', CourseListCreateAPIView.as_view(), name='course-list'),
     path('courses/<int:pk>/', CourseRetrieveUpdateDestroyAPIView.as_view(), name='course-detail'),

@@ -24,5 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', views.signUp.as_view(), name='signup'),
     path('signup/verify', views.verify.as_view(), name='verify'),
-    path('auth/', include('ElearningPlatform.urls'))
+    path('api/', include('ElearningPlatform.urls'))
 ]
