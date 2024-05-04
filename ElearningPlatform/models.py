@@ -71,12 +71,13 @@ class Chat_participant(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
-
 class Chatroom(models.Model):
     room_name = models.CharField(max_length=100)
+    participants = models.ManyToManyField(Chat_participant)
 
 
 class Message(models.Model):
     content = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
     room = models.ForeignKey(Chatroom, on_delete=models.CASCADE)
+    sender = models.ForeignKey(Chat_participant, on_delete=models.CASCADE, default=None)
