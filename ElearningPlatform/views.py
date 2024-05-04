@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ObjectDoesNotExist
@@ -211,6 +213,32 @@ class LogoutView(APIView):
         except Exception as e:
             return Response({"error": "Invalid token or logout failed."}, status=400)
 
+
+
+class enroll(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            course = Course.objects.get(name=request.data['course_name'])
+        except ObjectDoesNotExist:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        stats = Statistics.objects.create(
+            time_spent=0,
+            is_completed=False,
+            date=timezone.now(),
+            current_chapter=None
+        )
+
+        student_id = request.user.id
+        Enrollments.objects.create(
+            course=course,
+            student_id=student_id,
+            statistics=stats
+        )
+
+        return Response({'message': 'Enrollment created successfully'}, status=status.HTTP_200_OK)
 
 # Course views
 

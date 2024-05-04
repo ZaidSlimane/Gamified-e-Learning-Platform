@@ -45,9 +45,17 @@ class Chapter(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
+class Statistics(models.Model):
+    time_spent = models.FloatField(default=0)
+    is_completed = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now_add=True)
+    current_chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE)
+
 class Enrollments(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    statistics = models.ForeignKey(Statistics, on_delete=models.CASCADE, related_name='enrollments')
+
 
 
 class Review(models.Model):
