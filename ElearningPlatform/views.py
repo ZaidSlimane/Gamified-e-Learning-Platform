@@ -1,52 +1,23 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
-from django.http import JsonResponse
-from django.shortcuts import render
-import mailersend, json
+from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.models import User, Group
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from rest_framework import generics
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 from backend import settings
 from .serializers import *
 from .models import *
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.generics import ListCreateAPIView, DestroyAPIView
-
-from django.shortcuts import render
-
-# Create your views here.
-
-from django.shortcuts import render
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-
-# Create your views here.
-from .models import Student
-from .serializers import UserSerializer, StudentSerializer
-
-
-def check_email_exists(self, email):
-    User = get_user_model()
-    return User.objects.filter(email=email).exists()
-
-
 import logging
 import random
 import string
-from datetime import datetime, timezone
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -59,20 +30,17 @@ from .serializers import UserSerializer, StudentSerializer
 logger = logging.getLogger(__name__)
 
 
-def check_email_exists(email):
-    return User.objects.filter(email=email).exists()
-
+# Create your views here.
 
 class signUp(APIView):
     def post(self, request, *args, **kwargs):
         try:
             serializer = StudentSerializer(data=request.data)
             if serializer.is_valid():
-                email = serializer.validated_data.get('user', {}).get('email')
+                user_data = serializer.validated_data.pop('user', {})
+                email = user_data.get('email')
                 if check_email_exists(email):
                     raise ValidationError("The student is already registered")
-
-                user_data = serializer.validated_data.pop('user', {})
                 user = get_user_model().objects.create_user(
                     username=user_data.get('username'),
                     email=email,
@@ -86,24 +54,28 @@ class signUp(APIView):
                 student_instance = Student(user=user,
                                            phone_number=serializer.validated_data.get('phone_number'),
                                            grade=serializer.validated_data.get('grade'),
-                                           otp=serializer.validated_data.get('otp')
                                            )
                 student_instance.save()
-                request_code(request, student_instance)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                request_code(student_instance)
+                # You should return a success response here, such as:
+                return HttpResponse("Code sent! Please check your email.")
+            else:
+                # The errors should be returned here in the else block.
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def request_code(request, student_instance):
+def request_code(student_instance):
     try:
         code = generate_otp()
+        # Verifing the email is sent first
+        send_verification_email(code, student_instance.user.email)
+        # Save the otp in the student
         student_instance.otp = code
         student_instance.save()
-        send_verification_email(code, student_instance.user.email)
-        return HttpResponse("Code sent! Please check your email.")
     except Exception as e:
         logger.error("Error sending verification email: %s", e)
         return HttpResponse("Failed to send verification code. Please try again later.")
@@ -119,8 +91,23 @@ def send_verification_email(code, email):
         email_message.content_subtype = "html"
         email_message.send()
     except Exception as e:
+        delete_user(email)
         logger.error("Error sending email: %s", e)
         raise
+
+
+def delete_user(email):
+    try:
+        # Get the user with the specified email address
+        user = User.objects.get(email=email)
+        user.delete()
+    except ObjectDoesNotExist as e:
+        # User with the specified email address does not exist
+        logger.error("User could not be deleted", e)
+
+
+def check_email_exists(email):
+    return User.objects.filter(email=email).exists()
 
 
 def generate_otp(length=4):
@@ -129,9 +116,15 @@ def generate_otp(length=4):
 
 class verify(APIView):
     def post(self, request):
-        user_code = request.POST.get('code', '')
+        user_code = request.data.get('code')
+        print(user_code)
         student = verify_student_code(user_code)
         if student:
+
+            # Add the student in the student group
+            student_group = Group.objects.get(name='STUDENT')
+            student_group.user_set.add(student.user)
+
             student.user.is_active = True
             student.user.save()
             student.otp = None
@@ -144,12 +137,10 @@ class verify(APIView):
 
 def verify_student_code(user_code):
     try:
-        Student.objects.get(otp=user_code)
-        return True
+        return Student.objects.get(otp=user_code)
     except Student.DoesNotExist as e:
-        return False
-
-
+        logger.error(e)
+        return None
 
 
 @api_view(['GET'])
@@ -161,9 +152,51 @@ class home(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        content = {'message': 'Welcome to the JWT Authentication page using React Js and Django!'}
+        user = request.user
+        user_group = get_user_group(user)
 
-        return Response(content)
+        if user_group == "STUDENT":
+            student = Student.objects.get(user=user)
+            serializer = StudentSerializer(student)
+            serialized_data = serializer.data
+            return Response(serialized_data)
+        else:
+            return JsonResponse({'error': 'User is not a student.'}, status=400)
+
+
+class LoginView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        user = User.objects.get(username=username)
+        if not user.groups.filter(name='STUDENT').exists():
+            return Response({'detail': 'Only STUDENT group users can log in.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TokenView(APIView):
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TokenObtainPairSerializer(data={'username': username, 'password': password})
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def get_user_group(user):
+    try:
+        group = user.groups.first()
+        return group.name
+    except Exception as e:
+        logger.error(e)
+        return None
 
 
 class LogoutView(APIView):

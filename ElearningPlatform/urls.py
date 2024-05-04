@@ -10,6 +10,7 @@ from .views import *
 urlpatterns = [
     path('hello-world/', views.hello_world, name='hello_world'),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', TokenView.as_view(), name='token'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('home/', views.home.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
