@@ -12,7 +12,7 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/', TokenView.as_view(), name='token'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('home/', views.home.as_view(), name='login'),
+    path('home/', views.home.as_view(), name='home'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('courses/', CourseListCreateAPIView.as_view(), name='course-list'),
     path('courses/<int:pk>/', CourseRetrieveUpdateDestroyAPIView.as_view(), name='course-detail'),
@@ -28,9 +28,10 @@ urlpatterns = [
     path('enrollments/', EnrollmentListCreateAPIView.as_view(), name='enrollment-list-create'),
     path('enrollments/<int:pk>/', EnrollmentDetailAPIView.as_view(), name='enrollment-detail'),
     path('student/<int:student_id>/enrollments', EnrollmentByStudentAPIView.as_view(), name='enrollments-by-student'),
+    path('student/<int:student_id>/notenrolled', NotEnrolledCoursesByStudentAPIView.as_view(), name='not_enrolled-by-student'),
     path('course/<int:course_id>/enrollments', EnrollmentByCourseAPIView.as_view(), name='enrollments-by-course'),
     path('reviews/', ReviewListCreateAPIView.as_view(), name='review-list'),
-    path('reviews/<int:pk>/', ReviewDetailAPIView.as_view(), name='enrollment-detail'),
+    path('reviews/<int:pk>/', ReviewDetailAPIView.as_view(), name='review-detail'),
     path('course/<int:course_id>/reviews/', ReviewByCourseAPIView.as_view(), name='reviews-by-course'),
     path('student/<int:student_id>/reviews/', ReviewByStudentAPIView.as_view(), name='reviews-by-student'),
     path('questions/', QuestionListCreateAPIView.as_view(), name='question-list-create'),
@@ -52,5 +53,7 @@ urlpatterns = [
     path('chatParticipant/<int:participant_id>/chatrooms', ChatroomByChatParticipantAPIView.as_view(),
          name='chatroom-by-chatparticipant'),
     path('chatroom/<int:chatroom_id>/messages/', MessageByChatroomAPIView.as_view(), name='message-by-chatroom'),
+    path('teachers/', TeacherListCreateAPIView.as_view(), name='teacher-list-create'),
+    path('teachers/<int:pk>/', TeacherDetailAPIView.as_view(), name='teacher-detail'),
 
 ]

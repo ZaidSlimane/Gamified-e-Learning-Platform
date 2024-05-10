@@ -29,13 +29,25 @@ class TeacherSerializer(serializers.ModelSerializer):
         return teacher_instance
 
 
-class CourseSerializer(serializers.ModelSerializer):
-    teacher = TeacherSerializer()
 
+
+class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = ['id', 'courseName', 'courseSummary','courseLongSummary', 'recompense', 'terms', 'teacher', 'imglink']
+        read_only_fields = ['teacher']
 
+    def create(self, validated_data):
+        teacher_id = self.context.get('request').data.get('teacher')  # Assuming 'teacher' is the key for teacher ID in request data
+        validated_data['teacher_id'] = teacher_id
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        if request.method == 'GET':
+            data['teacher_id'] = instance.teacher_id
+        return data
 
 class ChapterSerializer(serializers.ModelSerializer):
     class Meta:

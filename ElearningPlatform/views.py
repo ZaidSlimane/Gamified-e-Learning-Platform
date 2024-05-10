@@ -56,7 +56,8 @@ class signUp(APIView):
                                            grade=serializer.validated_data.get('grade'),
                                            )
                 student_instance.save()
-                request_code(student_instance)
+
+                # request_code(student_instance)
                 # You should return a success response here, such as:
                 return HttpResponse("Code sent! Please check your email.")
             else:
@@ -219,6 +220,10 @@ class CourseListCreateAPIView(generics.ListCreateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
+    def perform_create(self, serializer):
+        teacher_id = self.request.data.get('teacher')  # Assuming 'teacher' is the key for teacher ID in request data
+        serializer.save(teacher_id=teacher_id)
+
 
 class CourseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
@@ -253,6 +258,8 @@ class CourseChapterDetailAPIView(RetrieveAPIView):
 class CourseChapterDeleteAPIView(DestroyAPIView):
     queryset = Chapter.objects.all()
     serializer_class = ChapterSerializer
+
+
 
 
 @api_view(['DELETE'])
@@ -300,6 +307,17 @@ class EnrollmentByStudentAPIView(generics.ListAPIView):
         student_id = self.kwargs['student_id']
         return Enrollments.objects.filter(student_id=student_id)
 
+class NotEnrolledCoursesByStudentAPIView(generics.ListAPIView):
+    serializer_class = CourseSerializer  # Assuming you have a serializer for courses
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        all_courses = Course.objects.all()
+        enrolled_courses = Enrollments.objects.filter(student_id=student_id).values_list('course_id', flat=True)
+        not_enrolled_courses = all_courses.exclude(id__in=enrolled_courses)
+        return not_enrolled_courses
+
+
 
 class ReviewListCreateAPIView(generics.ListCreateAPIView):
     queryset = Review.objects.all()
@@ -309,6 +327,16 @@ class ReviewListCreateAPIView(generics.ListCreateAPIView):
 class ReviewDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+
+class TeacherListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Teacher.objects.all()
+    serializer_class = TeacherSerializer
+
+
+class TeacherDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Teacher.objects.all()
+    serializer_class = TeacherSerializer
 
 
 class ReviewByCourseAPIView(generics.ListAPIView):

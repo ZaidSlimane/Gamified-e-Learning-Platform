@@ -33,21 +33,34 @@ class Teacher(models.Model):
 
 class Course(models.Model):
     courseName = models.CharField(max_length=100)
-    courseSummary = models.TextField(max_length=100)
+    courseSummary = models.TextField(max_length=500)
     recompense = models.fields.IntegerField()
     terms = models.fields.CharField(max_length=255)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    imglink = models.TextField(max_length=100)
+    courseLongSummary = models.TextField(max_length=500)
 
+
+class Games(models.Model):
+    game_name = models.CharField(max_length=100)
+    game_points = models.IntegerField()
+    question_text = models.CharField(max_length=255)
+    answer1_text = models.CharField(max_length=255)
+    answer2_text = models.CharField(max_length=255)
+    answer3_text = models.CharField(max_length=255)
+    correct_answer = models.IntegerField(choices=[(1, 'Answer 1'), (2, 'Answer 2'), (3, 'Answer 3')])
 
 class Chapter(models.Model):
     chapterName = models.CharField(max_length=100)
     content = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    game = models.ForeignKey(Games, on_delete=models.CASCADE)
 
 
 class Enrollments(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    passed_chapter = models.IntegerField(default=0)
 
 
 class Review(models.Model):
@@ -63,9 +76,7 @@ class Question(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE)
 
 
-class Games(models.Model):
-    game_name = models.CharField(max_length=100)
-    game_points = models.IntegerField()
+
 
 
 class Chat_participant(models.Model):
@@ -75,6 +86,7 @@ class Chat_participant(models.Model):
 class Chatroom(models.Model):
     room_name = models.CharField(max_length=100)
     participants = models.ManyToManyField(Chat_participant)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
 class Message(models.Model):
