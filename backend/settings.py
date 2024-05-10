@@ -44,8 +44,11 @@ INSTALLED_APPS = [
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 300
+SESSION_COOKIE_AGE = 36000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+ALLOWED_HOSTS = ['your-domain.com', 'localhost', '127.0.0.1', '192.168.1.25']
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -115,7 +118,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'elearninPlatform',
         'USER': 'root',
-        'PASSWORD': 'slim2003',  # change if needed
+        'PASSWORD': 'inflmr34.psd,0',  # change if needed
         'HOST': '127.0.0.1',
         'PORT': '3306',  # Optional, default port for MySQL is 3306
     }
