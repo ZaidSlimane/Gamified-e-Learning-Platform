@@ -40,6 +40,10 @@ class Course(models.Model):
     imglink = models.TextField(max_length=100)
     courseLongSummary = models.TextField(max_length=500)
 
+class Chapter(models.Model):
+    chapterName = models.CharField(max_length=100)
+    content = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class Games(models.Model):
     game_name = models.CharField(max_length=100)
@@ -49,18 +53,26 @@ class Games(models.Model):
     answer2_text = models.CharField(max_length=255)
     answer3_text = models.CharField(max_length=255)
     correct_answer = models.IntegerField(choices=[(1, 'Answer 1'), (2, 'Answer 2'), (3, 'Answer 3')])
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE)
 
-class Chapter(models.Model):
-    chapterName = models.CharField(max_length=100)
-    content = models.TextField()
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    game = models.ForeignKey(Games, on_delete=models.CASCADE)
+
+
+
 
 
 class Enrollments(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     passed_chapter = models.IntegerField(default=0)
+
+
+class statistics(models.Model):
+    enrollment = models.ForeignKey(Enrollments, on_delete=models.CASCADE)
+    date = models.DateField()
+    points = models.IntegerField()
+    passed_chapters = models.IntegerField()
+    #number of course chapters passed in a day
+
 
 
 class Review(models.Model):
@@ -94,3 +106,5 @@ class Message(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     room = models.ForeignKey(Chatroom, on_delete=models.CASCADE)
     sender = models.ForeignKey(Chat_participant, on_delete=models.CASCADE, default=None)
+
+

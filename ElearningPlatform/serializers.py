@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Teacher, Course, Chapter, Enrollments, Review, Question, Games, Chat_participant, Chatroom, \
-    Message
+from .models import *
 from django.contrib.auth.models import User
 
 
@@ -55,10 +54,18 @@ class ChapterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class EnrollmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollments
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow partial updates
+        self.partial = True
+
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -77,6 +84,15 @@ class GamesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Games
         fields = '__all__'
+
+class StatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = statistics
+        fields = '__all__'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow partial updates
+        self.partial = True
 
 
 class ChatParticipantSerializer(serializers.ModelSerializer):

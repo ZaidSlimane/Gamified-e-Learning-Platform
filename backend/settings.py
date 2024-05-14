@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 36000
+SESSION_COOKIE_AGE = 3600
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ALLOWED_HOSTS = ['your-domain.com', 'localhost', '127.0.0.1', '192.168.1.25']
