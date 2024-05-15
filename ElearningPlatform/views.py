@@ -505,3 +505,17 @@ class StatisticsByEnrollmentAndDateListAPIView(generics.ListAPIView):
         enrollment_id = self.kwargs['enrollment_id']
         date = self.kwargs['date']
         return statistics.objects.filter(enrollment_id=enrollment_id, date=date)
+
+class StatisticsByStudentListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        return statistics.objects.filter(enrollment__student_id=student_id)
+class StatisticsByCourseAndStudentListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        student_id = self.kwargs['student_id']
+        return statistics.objects.filter(enrollment__course_id=course_id, enrollment__student_id=student_id)

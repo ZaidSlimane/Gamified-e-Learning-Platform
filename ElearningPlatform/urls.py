@@ -68,5 +68,9 @@ urlpatterns = [
     path('statistics/by-date/<str:date>/', StatisticsByDateListAPIView.as_view(), name='statistics-by-date'),
     path('statistics/by-enrollment-and-date/<int:enrollment_id>/<str:date>/',
          StatisticsByEnrollmentAndDateListAPIView.as_view(), name='statistics-by-enrollment-and-date'),
+    path('student/<int:student_id>/statistics/', StatisticsByStudentListAPIView.as_view(),
+         name='statistics-by-student'),
+    path('statistics/course/<int:course_id>/student/<int:student_id>/',
+         StatisticsByCourseAndStudentListAPIView.as_view(), name='statistics-by-course-and-student'),
 
 ]
