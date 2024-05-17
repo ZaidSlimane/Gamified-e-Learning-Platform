@@ -28,6 +28,8 @@ urlpatterns = [
     path('enrollments/', EnrollmentListCreateAPIView.as_view(), name='enrollment-list-create'),
     path('enrollments/<int:pk>/', EnrollmentDetailAPIView.as_view(), name='enrollment-detail'),
     path('student/<int:student_id>/enrollments', EnrollmentByStudentAPIView.as_view(), name='enrollments-by-student'),
+    path('student/<int:student_id>/courses', EnrolledCoursesByStudentAPIView.as_view(), name='enrolled-courses-by-student'),
+
     path('student/<int:student_id>/notenrolled', NotEnrolledCoursesByStudentAPIView.as_view(),
          name='not_enrolled-by-student'),
     path('student/<int:student_id>/course/<int:course_id>/enrollments/', EnrollmentByStudentAndCourseAPIView.as_view(),
@@ -72,5 +74,7 @@ urlpatterns = [
          name='statistics-by-student'),
     path('statistics/course/<int:course_id>/student/<int:student_id>/',
          StatisticsByCourseAndStudentListAPIView.as_view(), name='statistics-by-course-and-student'),
+    path('questions/answered', AnsweredQuestionListAPIView.as_view(), name='answered-questions'),
+    path('questions/notAnswered', UnansweredQuestionListAPIView.as_view(), name='not-answered-questions')
 
 ]

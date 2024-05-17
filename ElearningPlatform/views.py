@@ -321,6 +321,20 @@ class NotEnrolledCoursesByStudentAPIView(generics.ListAPIView):
         return not_enrolled_courses
 
 
+class EnrolledCoursesByStudentAPIView(generics.ListAPIView):
+    serializer_class = CourseSerializer  # Assuming you have a serializer for courses
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        # Get the IDs of courses in which the student is enrolled
+        enrolled_course_ids = Enrollments.objects.filter(student_id=student_id).values_list('course_id', flat=True)
+        # Get the courses that match these IDs
+        enrolled_courses = Course.objects.filter(id__in=enrolled_course_ids)
+        return enrolled_courses
+
+
+
+
 class EnrollmentByStudentAndCourseAPIView(generics.ListAPIView):
     serializer_class = EnrollmentsSerializer
 
@@ -398,6 +412,21 @@ class QuestionByStudentAPIView(generics.ListAPIView):
     def get_queryset(self):
         student_id = self.kwargs['student_id']
         return Question.objects.filter(student_id=student_id)
+
+
+
+class AnsweredQuestionListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        return Question.objects.exclude(question_answer='no answer yet')
+
+class UnansweredQuestionListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        return Question.objects.filter(question_answer='no answer yet')
+
 
 
 class ChatParticipantListCreateAPIView(generics.ListCreateAPIView):
