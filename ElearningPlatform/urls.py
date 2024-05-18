@@ -28,7 +28,8 @@ urlpatterns = [
     path('enrollments/', EnrollmentListCreateAPIView.as_view(), name='enrollment-list-create'),
     path('enrollments/<int:pk>/', EnrollmentDetailAPIView.as_view(), name='enrollment-detail'),
     path('student/<int:student_id>/enrollments', EnrollmentByStudentAPIView.as_view(), name='enrollments-by-student'),
-    path('student/<int:student_id>/courses', EnrolledCoursesByStudentAPIView.as_view(), name='enrolled-courses-by-student'),
+    path('student/<int:student_id>/courses', EnrolledCoursesByStudentAPIView.as_view(),
+         name='enrolled-courses-by-student'),
 
     path('student/<int:student_id>/notenrolled', NotEnrolledCoursesByStudentAPIView.as_view(),
          name='not_enrolled-by-student'),
@@ -75,6 +76,19 @@ urlpatterns = [
     path('statistics/course/<int:course_id>/student/<int:student_id>/',
          StatisticsByCourseAndStudentListAPIView.as_view(), name='statistics-by-course-and-student'),
     path('questions/answered', AnsweredQuestionListAPIView.as_view(), name='answered-questions'),
-    path('questions/notAnswered', UnansweredQuestionListAPIView.as_view(), name='not-answered-questions')
+    path('questions/notAnswered', UnansweredQuestionListAPIView.as_view(), name='not-answered-questions'),
+    path('teacher/<int:teacher_id>/courses', CourseByTeacherListAPIView.as_view(), name='course-by-teacher'),
+    path('courses/<int:course_id>/students/', StudentsByCourseListAPIView.as_view(), name='students-by-course'),
+    path('students/<int:pk>/', GetStudentByIDAPIView.as_view(), name='get-student-by-id'),
+    path('questions/answered/student/<int:student_id>/course/<int:course_id>/',
+         AnsweredQuestionBystudentAndCourseListAPIView.as_view(),
+         name='answered-questions'),
+    path('questions/notAnswered/student/<int:student_id>/course/<int:course_id>/',
+         UnansweredQuestionBystudentAndCourseListAPIView.as_view(),
+         name='unanswered-questions'),
+    path('questions/answered/teacher/<int:teacher_id>/', AnsweredQuestionByTeacherListAPIView.as_view(),
+         name='answered-questions-by-teacher'),
+    path('questions/notAnswered/teacher/<int:teacher_id>/', UnansweredQuestionByTeacherListAPIView.as_view(),
+         name='unanswered-questions-by-teacher'),
 
 ]
