@@ -155,6 +155,7 @@ class home(APIView):
     def get(self, request):
         user = request.user
         user_group = get_user_group(user)
+        print(user_group)
 
         if user_group == "STUDENT":
             student = Student.objects.get(user=user)
@@ -162,7 +163,13 @@ class home(APIView):
             serialized_data = serializer.data
             return Response(serialized_data)
         else:
-            return JsonResponse({'error': 'User is not a student.'}, status=400)
+            if user_group == 'TEACHER':
+                teacher = Teacher.objects.get(user=user)
+                serializer = TeacherSerializer(teacher)
+                serialized_data = serializer.data
+                return Response(serialized_data)
+            else:
+                return JsonResponse({'error': 'User is not a student.'}, status=400)
 
 
 class LoginView(TokenObtainPairView):
@@ -230,6 +237,14 @@ class CourseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CourseSerializer
 
 
+class CourseByTeacherListAPIView(generics.ListAPIView):
+    serializer_class = CourseSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs['teacher_id']
+        return Course.objects.filter(teacher_id=teacher_id)
+
+
 class ChapterListCreateAPIView(generics.ListCreateAPIView):
     queryset = Chapter.objects.all()
     serializer_class = ChapterSerializer
@@ -260,8 +275,6 @@ class CourseChapterDeleteAPIView(DestroyAPIView):
     serializer_class = ChapterSerializer
 
 
-
-
 @api_view(['DELETE'])
 def chapterdelete(request, pk):
     try:
@@ -287,9 +300,12 @@ class EnrollmentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = EnrollmentsSerializer
 
 
-class EnrollmentDetailAPIView(generics.RetrieveDestroyAPIView):
+class EnrollmentDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Enrollments.objects.all()
     serializer_class = EnrollmentsSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
 
 
 class EnrollmentByCourseAPIView(generics.ListAPIView):
@@ -307,6 +323,7 @@ class EnrollmentByStudentAPIView(generics.ListAPIView):
         student_id = self.kwargs['student_id']
         return Enrollments.objects.filter(student_id=student_id)
 
+
 class NotEnrolledCoursesByStudentAPIView(generics.ListAPIView):
     serializer_class = CourseSerializer  # Assuming you have a serializer for courses
 
@@ -317,6 +334,26 @@ class NotEnrolledCoursesByStudentAPIView(generics.ListAPIView):
         not_enrolled_courses = all_courses.exclude(id__in=enrolled_courses)
         return not_enrolled_courses
 
+
+class EnrolledCoursesByStudentAPIView(generics.ListAPIView):
+    serializer_class = CourseSerializer  # Assuming you have a serializer for courses
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        # Get the IDs of courses in which the student is enrolled
+        enrolled_course_ids = Enrollments.objects.filter(student_id=student_id).values_list('course_id', flat=True)
+        # Get the courses that match these IDs
+        enrolled_courses = Course.objects.filter(id__in=enrolled_course_ids)
+        return enrolled_courses
+
+
+class EnrollmentByStudentAndCourseAPIView(generics.ListAPIView):
+    serializer_class = EnrollmentsSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        course_id = self.kwargs['course_id']
+        return Enrollments.objects.filter(student_id=student_id, course_id=course_id)
 
 
 class ReviewListCreateAPIView(generics.ListCreateAPIView):
@@ -389,6 +426,63 @@ class QuestionByStudentAPIView(generics.ListAPIView):
         return Question.objects.filter(student_id=student_id)
 
 
+class AnsweredQuestionListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        return Question.objects.exclude(question_answer='no answer yet')
+
+
+class UnansweredQuestionListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        return Question.objects.filter(question_answer='no answer yet')
+
+
+class AnsweredQuestionBystudentAndCourseListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs.get('student_id')
+        course_id = self.kwargs.get('course_id')
+        return Question.objects.filter(
+            student_id=student_id,
+            chapter__course_id=course_id
+        ).exclude(question_answer='no answer yet')
+
+
+class UnansweredQuestionBystudentAndCourseListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs.get('student_id')
+        course_id = self.kwargs.get('course_id')
+        return Question.objects.filter(
+            student_id=student_id,
+            chapter__course_id=course_id,
+            question_answer='no answer yet'
+        )
+
+class AnsweredQuestionByTeacherListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('teacher_id')
+        return Question.objects.filter(
+            chapter__course__teacher_id=teacher_id
+        ).exclude(question_answer='no answer yet')
+
+class UnansweredQuestionByTeacherListAPIView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('teacher_id')
+        return Question.objects.filter(
+            chapter__course__teacher_id=teacher_id,
+            question_answer='no answer yet'
+        )
+
 class ChatParticipantListCreateAPIView(generics.ListCreateAPIView):
     queryset = Chat_participant.objects.all()
     serializer_class = ChatParticipantSerializer
@@ -441,3 +535,100 @@ class MessageByChatroomAPIView(generics.ListAPIView):
     def get_queryset(self):
         chatroom_id = self.kwargs['chatroom_id']
         return Message.objects.filter(room_id=chatroom_id)
+
+
+class GameListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Games.objects.all()
+    serializer_class = GamesSerializer
+
+
+class GameDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Games.objects.all()
+    serializer_class = GamesSerializer
+
+
+class GameByChapterAPIView(generics.ListAPIView):
+    serializer_class = GamesSerializer
+
+    def get_queryset(self):
+        chapter_id = self.kwargs.get('chapter_id')
+        return Games.objects.filter(chapter_id=chapter_id)
+
+
+class StatisticsListCreateAPIView(generics.ListCreateAPIView):
+    queryset = statistics.objects.all()
+    serializer_class = StatisticsSerializer
+
+
+class StatisticsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = statistics.objects.all()
+    serializer_class = StatisticsSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class StatisticsByEnrollmentListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        enrollment_id = self.kwargs['enrollment_id']
+        return statistics.objects.filter(enrollment_id=enrollment_id)
+
+
+class StatisticsByDateListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        date = self.kwargs['date']
+        return statistics.objects.filter(date=date)
+
+
+class StatisticsByEnrollmentAndDateListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        enrollment_id = self.kwargs['enrollment_id']
+        date = self.kwargs['date']
+        return statistics.objects.filter(enrollment_id=enrollment_id, date=date)
+
+
+class StatisticsByStudentListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        student_id = self.kwargs['student_id']
+        return statistics.objects.filter(enrollment__student_id=student_id)
+
+
+class StatisticsByCourseAndStudentListAPIView(generics.ListAPIView):
+    serializer_class = StatisticsSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        student_id = self.kwargs['student_id']
+        return statistics.objects.filter(enrollment__course_id=course_id, enrollment__student_id=student_id)
+
+
+class StudentsByCourseListAPIView(generics.ListAPIView):
+    serializer_class = StudentSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Student.objects.filter(enrollments__course_id=course_id)
+
+
+class CourseChapterListAPIView(ListCreateAPIView):
+    serializer_class = ChapterSerializer
+
+    def get_queryset(self):
+        # Retrieve the course_id from the URL parameter
+        course_id = self.kwargs['course_id']
+        # Filter chapters based on the course_id
+        return Chapter.objects.filter(course_id=course_id)
+
+
+class GetStudentByIDAPIView(generics.RetrieveAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = 'pk'
