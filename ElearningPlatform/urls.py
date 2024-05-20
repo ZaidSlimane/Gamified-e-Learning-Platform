@@ -90,5 +90,7 @@ urlpatterns = [
          name='answered-questions-by-teacher'),
     path('questions/notAnswered/teacher/<int:teacher_id>/', UnansweredQuestionByTeacherListAPIView.as_view(),
          name='unanswered-questions-by-teacher'),
+    path('chatrooms/<int:room_id>/add-participant/', AddChatParticipantAPIView.as_view(), name='add-participant'),
+    path('user/<int:user_id>/chatrooms', ChatroomByUserId.as_view(), name='chatrooms-by-user-id'),
 
 ]

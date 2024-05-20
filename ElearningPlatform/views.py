@@ -23,6 +23,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.contenttypes.models import ContentType
+
 
 from .models import Student
 from .serializers import UserSerializer, StudentSerializer
@@ -155,21 +157,28 @@ class home(APIView):
     def get(self, request):
         user = request.user
         user_group = get_user_group(user)
-        print(user_group)
 
         if user_group == "STUDENT":
             student = Student.objects.get(user=user)
             serializer = StudentSerializer(student)
             serialized_data = serializer.data
+
             return Response(serialized_data)
         else:
             if user_group == 'TEACHER':
                 teacher = Teacher.objects.get(user=user)
                 serializer = TeacherSerializer(teacher)
                 serialized_data = serializer.data
+
                 return Response(serialized_data)
             else:
-                return JsonResponse({'error': 'User is not a student.'}, status=400)
+                if user_group == 'SPECIALIST':
+                    user = User.objects.get(username=user)
+                    serializer = UserSerializer(user)
+                    serialized_data = serializer.data
+                    return Response(serialized_data)
+                else:
+                    return JsonResponse({'error': 'User is not a student.'}, status=400)
 
 
 class LoginView(TokenObtainPairView):
@@ -212,12 +221,14 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data['refresh_token']
+            refresh_token = request.data.get('refresh_token')
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({"message": "Logout successful."})
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            return Response({"error": "Invalid token or logout failed."}, status=400)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # Course views
@@ -518,7 +529,7 @@ class ChatParticipantByUserIDAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return Chat_participant.objects.filter(student_id=user_id) | Chat_participant.objects.filter(teacher_id=user_id)
+        return Chat_participant.objects.filter(user_id=user_id)
 
 
 class ChatroomByChatParticipantAPIView(generics.ListAPIView):
@@ -632,3 +643,31 @@ class GetStudentByIDAPIView(generics.RetrieveAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     lookup_field = 'pk'
+
+class AddChatParticipantAPIView(APIView):
+    def patch(self, request, *args, **kwargs):
+        room_id = self.kwargs.get('room_id')
+        participant_id = request.data.get('participant_id')
+
+        if not room_id or not participant_id:
+            return Response({"message": "Both room_id and participant_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            chatroom = Chatroom.objects.get(id=room_id)
+            participant = Chat_participant.objects.get(id=participant_id)
+        except (Chatroom.DoesNotExist, Chat_participant.DoesNotExist) as e:
+            return Response({"message": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        chatroom.participants.add(participant)
+        chatroom.save()
+
+        return Response({"message": "Participant added successfully"}, status=status.HTTP_200_OK)
+
+
+class ChatroomByUserId(generics.ListAPIView):
+    serializer_class = ChatroomSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        # Assuming you want chatrooms where the user is a participant
+        return Chatroom.objects.filter(participants__user_id=user_id)

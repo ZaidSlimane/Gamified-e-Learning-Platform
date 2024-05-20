@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 # Create your models here.
@@ -43,7 +45,8 @@ class Course(models.Model):
 class Chapter(models.Model):
     chapterName = models.CharField(max_length=100)
     content = models.TextField()
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
 
 class Games(models.Model):
     game_name = models.CharField(max_length=100)
@@ -92,13 +95,17 @@ class Question(models.Model):
 
 
 class Chat_participant(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    user_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    user_id = models.PositiveIntegerField()
+    user_object = GenericForeignKey('user_type', 'user_id')
+
 
 class Chatroom(models.Model):
     room_name = models.CharField(max_length=100)
-    participants = models.ManyToManyField(Chat_participant)
+    participants = models.ManyToManyField(Chat_participant, blank=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+
 
 
 class Message(models.Model):
