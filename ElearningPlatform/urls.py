@@ -56,6 +56,8 @@ urlpatterns = [
     path('messages/<int:pk>/', MessageRetrieveUpdateDestroyAPIView.as_view(), name='message-retrieve-update-destroy'),
     path('user/<int:user_id>/chatId', ChatParticipantByUserIDAPIView.as_view(),
          name='chat-participant-by-user'),
+    path('chatParticipant/<int:user_id>/user', UserByChatIDAPIView.as_view(),
+         name='chat-participant-by-user'),
     path('chatParticipant/<int:participant_id>/chatrooms', ChatroomByChatParticipantAPIView.as_view(),
          name='chatroom-by-chatparticipant'),
     path('chatroom/<int:chatroom_id>/messages/', MessageByChatroomAPIView.as_view(), name='message-by-chatroom'),
@@ -92,5 +94,8 @@ urlpatterns = [
          name='unanswered-questions-by-teacher'),
     path('chatrooms/<int:room_id>/add-participant/', AddChatParticipantAPIView.as_view(), name='add-participant'),
     path('user/<int:user_id>/chatrooms', ChatroomByUserId.as_view(), name='chatrooms-by-user-id'),
+    path('teachers/', TeacherList.as_view(), name='teacher-list'),
+    path('users/<int:pk>', UserDetail.as_view(), name='user-detail'),
+
 
 ]

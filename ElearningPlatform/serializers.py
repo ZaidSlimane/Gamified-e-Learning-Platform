@@ -7,6 +7,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow partial updates
+        self.partial = True
+
+
 
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -52,6 +58,10 @@ class ChapterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chapter
         fields = '__all__'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow partial updates
+        self.partial = True
 
 
 
@@ -84,6 +94,10 @@ class GamesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Games
         fields = '__all__'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow partial updates
+        self.partial = True
 
 class StatisticsSerializer(serializers.ModelSerializer):
     class Meta:

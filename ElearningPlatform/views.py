@@ -532,6 +532,16 @@ class ChatParticipantByUserIDAPIView(generics.ListAPIView):
         return Chat_participant.objects.filter(user_id=user_id)
 
 
+
+class UserByChatIDAPIView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return User.objects.filter(id=user_id)
+
+
+
 class ChatroomByChatParticipantAPIView(generics.ListAPIView):
     serializer_class = ChatroomSerializer
 
@@ -671,3 +681,12 @@ class ChatroomByUserId(generics.ListAPIView):
         user_id = self.kwargs['user_id']
         # Assuming you want chatrooms where the user is a participant
         return Chatroom.objects.filter(participants__user_id=user_id)
+
+class TeacherList(generics.ListAPIView):
+    queryset = Teacher.objects.all()
+    serializer_class = TeacherSerializer
+
+
+class UserDetail(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
