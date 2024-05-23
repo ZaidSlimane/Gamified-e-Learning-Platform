@@ -59,9 +59,9 @@ class signUp(APIView):
                                            )
                 student_instance.save()
 
-                # request_code(student_instance)
+                #request_code(student_instance)
                 # You should return a success response here, such as:
-                return HttpResponse("Code sent! Please check your email.")
+                return Response(StudentSerializer(student_instance).data, status=status.HTTP_201_CREATED)
             else:
                 # The errors should be returned here in the else block.
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -690,3 +690,16 @@ class TeacherList(generics.ListAPIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class AllStudents(generics.ListAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+
+
+class ChatroomByCourseId(generics.ListAPIView):
+    serializer_class = ChatroomSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Chatroom.objects.filter(course_id=self.kwargs['course_id'])

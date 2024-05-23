@@ -95,7 +95,7 @@ TEMPLATES = [
     },
 ]
 
-CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     # Add other allowed origins as needed
@@ -109,9 +109,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.mailersend.net'  # Host for MailerSend SMTP
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587  # Port for MailerSend SMTP
-EMAIL_HOST_USER = 'MS_psdNE6@trial-z3m5jgrq60oldpyo.mlsender.net'  # Your MailerSend SMTP user
-EMAIL_HOST_PASSWORD = 'C3vN8qGurXSuQL5M'  # Your MailerSend SMTP password
-DEFAULT_FROM_EMAIL = 'MS_psdNE6@trial-z3m5jgrq60oldpyo.mlsender.net'
+EMAIL_HOST_USER = 'MS_9ixaO7@trial-ynrw7gynd8k42k8e.mlsender.net'  # Your MailerSend SMTP user
+EMAIL_HOST_PASSWORD = 'dQ8pfpOQw8esBvFH'  # Your MailerSend SMTP password
+DEFAULT_FROM_EMAIL = 'MS_9ixaO7@trial-ynrw7gynd8k42k8e.mlsender.net'
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 

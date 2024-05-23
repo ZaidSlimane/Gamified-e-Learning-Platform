@@ -96,6 +96,7 @@ urlpatterns = [
     path('user/<int:user_id>/chatrooms', ChatroomByUserId.as_view(), name='chatrooms-by-user-id'),
     path('teachers/', TeacherList.as_view(), name='teacher-list'),
     path('users/<int:pk>', UserDetail.as_view(), name='user-detail'),
-
+    path('students', AllStudents.as_view(), name='all-user-detail'),
+    path('course/<int:course_id>/chatroom', ChatroomByCourseId.as_view(), name='chatroom-by-course-id'),
 
 ]

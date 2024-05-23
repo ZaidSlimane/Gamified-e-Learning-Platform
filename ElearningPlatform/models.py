@@ -40,7 +40,7 @@ class Course(models.Model):
     terms = models.fields.CharField(max_length=255)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     imglink = models.TextField(max_length=100)
-    courseLongSummary = models.TextField(max_length=500)
+    courseLongSummary = models.TextField(max_length=5000)
 
 class Chapter(models.Model):
     chapterName = models.CharField(max_length=100)
