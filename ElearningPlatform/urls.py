@@ -98,5 +98,6 @@ urlpatterns = [
     path('users/<int:pk>', UserDetail.as_view(), name='user-detail'),
     path('students', AllStudents.as_view(), name='all-user-detail'),
     path('course/<int:course_id>/chatroom', ChatroomByCourseId.as_view(), name='chatroom-by-course-id'),
+    path('enrollment/<int:enrollment_id>/course', CourseByEnrollmentView.as_view(), name='course-by-enrollment'),
 
 ]

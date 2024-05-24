@@ -59,7 +59,7 @@ class signUp(APIView):
                                            )
                 student_instance.save()
 
-                #request_code(student_instance)
+                request_code(student_instance)
                 # You should return a success response here, such as:
                 return Response(StudentSerializer(student_instance).data, status=status.HTTP_201_CREATED)
             else:
@@ -703,3 +703,16 @@ class ChatroomByCourseId(generics.ListAPIView):
     def get_queryset(self):
         course_id = self.kwargs['course_id']
         return Chatroom.objects.filter(course_id=self.kwargs['course_id'])
+
+class CourseByEnrollmentView(generics.RetrieveAPIView):
+    serializer_class = CourseSerializer
+
+    def get(self, request, *args, **kwargs):
+        enrollment_id = kwargs.get('enrollment_id')
+        try:
+            enrollment = Enrollments.objects.get(pk=enrollment_id)
+            course = enrollment.course
+            serializer = self.get_serializer(course)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Enrollments.DoesNotExist:
+            return Response({'error': 'Enrollment not found'}, status=status.HTTP_404_NOT_FOUND)
